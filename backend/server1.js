@@ -4,22 +4,44 @@ import axios from 'axios'
 
 const app = express()
 app.use(express.json())
-
+const db = []
 app.get(`/create-order`, async function (req, res) {
+    const arr = ["created", "processing", "failed"];
+
+    const randomItem = arr[Math.floor(Math.random() * arr.length)];
     const order = {
         id: "123",
         amount: 500,
-        status: "created"
+        status: randomItem
     };
-    console.log(`order created sucesssfully`, order);
     try {
-        await axios.post('http://localhost:4000/webhook', order)
-        res.status(200).send('Webhook received and processed')
+        if (order.status === "created") {
+            db.push(order)
+            return res.json({
+                message: "Order created successfully",
+                order
+            })
+        }
+        if (order.status === "processing") {
+            db.push(order)
+            return res.json({
+                message: "Order created successfully",
+                order
+            })
+        }
+        if (order.status === "failed") {
+            throw new Error("Order processing failed")
+        }
 
     } catch (error) {
-        console.error('Error sending webhook:', error);
-        res.status(500).send('Error processing webhook')
+        console.error('Error creating order:', error);
+        await axios.post('http://localhost:4000/webhook', order)
+        return res.json({
+            message: "Order processing failed, retrying..."
+        })
+
     }
+
 })
 
 app.listen(3000, () => {

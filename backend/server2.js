@@ -3,15 +3,13 @@ import express from 'express'
 const app = express()
 app.use(express.json())
 app.post(`/webhook`, function (req, res) {
-   const { id, amount, status } = req.body;
-
-   if(status === 'created') {
-    console.log(`Order created successfully with ID: ${id} and Amount: ${amount}`);
-    res.status(200).send('Webhook received and processed');
-   } else {
-    console.log(`Received webhook with status: ${status} for Order ID: ${id}`);
-    res.status(200).send('Webhook received but not processed');
-   }
+    const order = req.body
+    if(order.status === "failed"){
+        console.log(`Order processing failed, retrying...`, order);
+        return res.json({
+            message: "Order processing failed, retrying..."
+        })
+    }
 })
 
 
